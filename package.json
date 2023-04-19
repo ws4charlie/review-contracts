@@ -1,0 +1,29 @@
+{
+  "name": "review-contracts",
+  "version": "1.0.0",
+  "description": "Core smart contracts of decentralized review protocol",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ws4charlie/review-contracts.git"
+  },
+  "keywords": [
+    "Ethereum",
+    "dApp"
+  ],
+  "author": "charliecc",
+  "bugs": {
+    "url": "https://github.com/ws4charlie/review-contracts/issues"
+  },
+  "homepage": "https://github.com/ws4charlie/review-contracts#readme",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^2.0.2",
+    "hardhat": "^2.13.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.8.2"
+  }
+}
