@@ -15,10 +15,10 @@ Full design notes: **[docs/DESIGN.md](docs/DESIGN.md)**
 System overview — who interacts with the protocol:
 
 ```mermaid
-flowchart LR
-    Sponsor([Sponsor]) -->|funds a bounty campaign| Hub
-    Reviewer([Reviewer]) -->|commits a review| Hub
-    Verifier([Verifier]) -->|verifies reviews| Hub
+flowchart TB
+    Sponsor([Sponsor]) -->|funds bounty| Hub
+    Reviewer([Reviewer]) -->|commits review| Hub
+    Verifier([Verifier]) -->|verifies| Hub
     Hub[Review Protocol<br/>smart contracts]
     Hub <-->|bounty, rewards, refunds| Token([ERC-20 token])
     Reviewer -.->|publishes| Mkt([Marketplaces])
@@ -28,7 +28,7 @@ flowchart LR
 Inside the contracts:
 
 ```mermaid
-flowchart LR
+flowchart TB
     Hub[CampaignHub<br/>campaigns and escrow]
     Pool[ReviewPool<br/>verification and payouts]
     Safe[ERC20Safe<br/>token custody]
