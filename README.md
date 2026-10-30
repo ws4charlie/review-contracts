@@ -12,24 +12,31 @@ Full design notes: **[docs/DESIGN.md](docs/DESIGN.md)**
 
 ## Architecture
 
+System overview — who interacts with the protocol:
+
 ```mermaid
 flowchart LR
-    Sponsor([Sponsor]) -->|create campaign, lock bounty| Hub
-    Reviewer([Reviewer]) -->|submit review commitment| Hub
-    Verifier([Verifier]) -->|vote: rating, appearance, market ID| Hub
-    subgraph Onchain[On-chain contracts]
-        Hub[CampaignHub<br/>campaigns - domains - escrow - gate]
-        Pool[ReviewPool<br/>reviews - voting - slashing - payout]
-        Safe[ERC20Safe<br/>safe token custody]
-        VPool[IVerifierPool<br/>verifier registry, interface only]
-        Hub -->|submit / verify / close| Pool
-        Hub --- Safe
-        Pool --- Safe
-        Pool -->|isVerifier / getPower| VPool
-    end
-    Token([ERC-20 bounty token]) <-->|bounty in, rewards and refund out| Hub
-    Reviewer -.->|publish review| Mkt([Marketplaces<br/>Amazon, eBay, Walmart, ...])
+    Sponsor([Sponsor]) -->|funds a bounty campaign| Hub
+    Reviewer([Reviewer]) -->|commits a review| Hub
+    Verifier([Verifier]) -->|verifies reviews| Hub
+    Hub[Review Protocol<br/>smart contracts]
+    Hub <-->|bounty, rewards, refunds| Token([ERC-20 token])
+    Reviewer -.->|publishes| Mkt([Marketplaces])
     Mkt -.->|review appears| Verifier
+```
+
+Inside the contracts:
+
+```mermaid
+flowchart LR
+    Hub[CampaignHub<br/>campaigns and escrow]
+    Pool[ReviewPool<br/>verification and payouts]
+    Safe[ERC20Safe<br/>token custody]
+    VPool[IVerifierPool<br/>verifier registry]
+    Hub --> Pool
+    Hub --- Safe
+    Pool --- Safe
+    Pool --> VPool
 ```
 
 ## Flow
@@ -42,19 +49,17 @@ sequenceDiagram
     participant R as Reviewer
     participant M as Marketplace
     participant V as Verifiers
-    S->>H: newCampaign(products, bounty)
-    H->>H: lock bounty in escrow
-    R->>H: submitReview(rootHash, headHash)
-    H->>P: submit(campaign, product, hashes)
+    S->>H: create campaign, fund the bounty
+    R->>H: commit a review (hashes only)
+    H->>P: record the commitment
     R->>M: publish the review
-    V->>M: check content, rating, appearance time
-    V->>H: verifyReview(bodyHash, rating, appearedAt, mktReviewID)
-    H->>P: verify(reviewID, ...)
-    Note over P: one opinion reaches 2/3 of total power<br/>and appearedAt is after submittedAt = Verified
-    S->>H: closeCampaign(slashIDs)
-    H->>P: close(campaign, bounty, portion, slashIDs)
-    P->>R: pay portion to each Verified reviewer
-    H->>S: refund unspent bounty
+    V->>M: check the published review
+    V->>H: vote with the observed facts
+    H->>P: tally the votes
+    Note over P: verified when one opinion<br/>reaches 2/3 of voting power
+    S->>H: close the campaign
+    P->>R: pay the verified reviewers
+    H->>S: refund the remainder
 ```
 
 ## Contracts
